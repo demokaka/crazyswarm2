@@ -27,7 +27,7 @@ from crazyflie_interfaces.srv import Takeoff, Land, GoTo, RemoveLogging, AddLogg
 from crazyflie_interfaces.srv import UploadTrajectory, StartTrajectory, NotifySetpointsStop
 from crazyflie_interfaces.srv import Arm
 from rcl_interfaces.msg import ParameterDescriptor, SetParametersResult, ParameterType
-from crazyflie_interfaces.msg import Position, Status, Hover, LogDataGeneric, FullState
+from crazyflie_interfaces.msg import Position, Status, Hover, LogDataGeneric, FullState, AttitudeSetpoint
 from motion_capture_tracking_interfaces.msg import NamedPoseArray
 
 from std_srvs.srv import Empty
@@ -326,6 +326,10 @@ class CrazyflieServer(Node):
                                            uri=uri), 10
             )
             self.create_subscription(
+                AttitudeSetpoint, name +
+                "/cmd_attitude_setpoint", partial(self._cmd_attitude_setpoint_changed, uri=uri), 10
+            )
+            self.create_subscription(
                 Position, name +
                 "/cmd_position", partial(self._cmd_position_changed, uri=uri), 10
             )
@@ -339,7 +343,7 @@ class CrazyflieServer(Node):
                 FullState, name +
                 "/cmd_full_state", partial(self._cmd_full_state_changed, uri=uri), 10
             )
-            qos_profile = QoSProfile(reliability =QoSReliabilityPolicy.BEST_EFFORT,
+            qos_profile = QoSProfile(reliability=QoSReliabilityPolicy.BEST_EFFORT,
                 history=QoSHistoryPolicy.KEEP_LAST,
                 depth=1,
                 deadline = Duration(seconds=0, nanoseconds=1e9/100.0))
@@ -1140,6 +1144,18 @@ class CrazyflieServer(Node):
         self.swarm._cfs[uri].cf.commander.send_setpoint(
             roll, pitch, yawrate, thrust)
 
+    def _cmd_attitude_changed(self, msg, uri=""):
+        """
+        Topic update callback to control the attitude and thrust
+            of the crazyflie
+        """
+        roll = degrees(msg.roll)
+        pitch = degrees(msg.pitch)
+        yawrate = -1.0*degrees(msg.yaw_rate)
+        thrust = int(min(max(msg.thrust, 0, 0), 60000))
+        self.swarm._cfs[uri].cf.commander.send_setpoint(
+            roll, pitch, yawrate, thrust)
+        
     def _cmd_position_changed(self, msg, uri=""):
         """
         Topic update callback to control the position command
