@@ -159,14 +159,14 @@ class CrazyflieServer(Node):
                 self._connection_failed
             )
 
-            # link statistics from CFlib
-            self.swarm._cfs[link_uri].status = {}
-            self.swarm._cfs[link_uri].status["latency"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.latency_updated.add_callback(partial(self._latency_callback, uri=link_uri))
-            self.swarm._cfs[link_uri].status["num_rx_unicast"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.uplink_rate_updated.add_callback(partial(self._uplink_rate_callback, uri=link_uri))
-            self.swarm._cfs[link_uri].status["num_tx_unicast"] = 0.0
-            self.swarm._cfs[link_uri].cf.link_statistics.downlink_rate_updated.add_callback(partial(self._downlink_rate_callback, uri=link_uri))
+            # # link statistics from CFlib
+            # self.swarm._cfs[link_uri].status = {}
+            # self.swarm._cfs[link_uri].status["latency"] = 0.0
+            # self.swarm._cfs[link_uri].cf.link_statistics.latency_updated.add_callback(partial(self._latency_callback, uri=link_uri))
+            # self.swarm._cfs[link_uri].status["num_rx_unicast"] = 0.0
+            # self.swarm._cfs[link_uri].cf.link_statistics.uplink_rate_updated.add_callback(partial(self._uplink_rate_callback, uri=link_uri))
+            # self.swarm._cfs[link_uri].status["num_tx_unicast"] = 0.0
+            # self.swarm._cfs[link_uri].cf.link_statistics.downlink_rate_updated.add_callback(partial(self._downlink_rate_callback, uri=link_uri))
 
             # check if logging is enabled at startup
             self.swarm._cfs[link_uri].logging = {}
@@ -1144,7 +1144,7 @@ class CrazyflieServer(Node):
         self.swarm._cfs[uri].cf.commander.send_setpoint(
             roll, pitch, yawrate, thrust)
 
-    def _cmd_attitude_changed(self, msg, uri=""):
+    def _cmd_attitude_setpoint_changed(self, msg, uri=""):
         """
         Topic update callback to control the attitude and thrust
             of the crazyflie
